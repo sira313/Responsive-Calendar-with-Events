@@ -38,9 +38,17 @@ const months = [
 ];
 
 
-const eventsArr = await fetch('./kegiatan.json').then(r => r.json());
+async function fetchEvents() {
+  const eventsArr = await fetch('./kegiatan.json').then(r => r.json());
+  return eventsArr;
+}
 
-getEvents();
+let eventsArr = [];
+fetchEvents().then(data => {
+  eventsArr = data;
+  getEvents();
+  initCalendar()
+});
 
 
 //function to add days in days with class day and prev-date next-date on previous month and next month days and active on today
@@ -252,21 +260,6 @@ function updateEvents(date) {
   saveEvents();
 }
 
-//function to add event
-addEventBtn.addEventListener("click", () => {
-  addEventWrapper.classList.toggle("active");
-});
-
-addEventCloseBtn.addEventListener("click", () => {
-  addEventWrapper.classList.remove("active");
-});
-
-document.addEventListener("click", (e) => {
-  if (e.target !== addEventBtn && !addEventWrapper.contains(e.target)) {
-    addEventWrapper.classList.remove("active");
-  }
-});
-
 //allow 50 chars in eventtitle
 addEventTitle.addEventListener("input", (e) => {
   addEventTitle.value = addEventTitle.value.slice(0, 60);
@@ -402,50 +395,15 @@ addEventSubmit.addEventListener("click", () => {
   }
 });
 
-//function to delete event when clicked on event
-eventsContainer.addEventListener("click", (e) => {
-  if (e.target.classList.contains("event")) {
-    if (confirm("Are you sure you want to delete this event?")) {
-      const eventTitle = e.target.children[0].children[1].innerHTML;
-      eventsArr.forEach((event) => {
-        if (
-          event.day === activeDay &&
-          event.month === month + 1 &&
-          event.year === year
-        ) {
-          event.events.forEach((item, index) => {
-            if (item.title === eventTitle) {
-              event.events.splice(index, 1);
-            }
-          });
-          //if no events left in a day then remove that day from eventsArr
-          if (event.events.length === 0) {
-            eventsArr.splice(eventsArr.indexOf(event), 1);
-            //remove event class from day
-            const activeDayEl = document.querySelector(".day.active");
-            if (activeDayEl.classList.contains("event")) {
-              activeDayEl.classList.remove("event");
-            }
-          }
-        }
-      });
-      updateEvents(activeDay);
-    }
-  }
-});
-
-//function to save events in local storage
+//function to save events (no longer needed as we are not using local storage)
 function saveEvents() {
-  localStorage.setItem("events", JSON.stringify(eventsArr));
+  // This function is intentionally left blank as events are fetched from "kegiatan.json"
 }
 
-//function to get events from local storage
+//function to get events from "kegiatan.json"
 function getEvents() {
-  //check if events are already saved in local storage then return event else nothing
-  if (localStorage.getItem("events") === null) {
-    return;
-  }
-  eventsArr.push(...JSON.parse(localStorage.getItem("events")));
+  // Events are already fetched from "kegiatan.json" during initialization
+  // No additional logic is needed here
 }
 
 function convertTime(time) {
